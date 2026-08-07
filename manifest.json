@@ -1,7 +1,7 @@
 {
-  "name": "不動產經紀人 · 電子參考書",
-  "short_name": "經紀人複習",
-  "description": "土地法與稅法概要 · 課文 + 歷屆題庫 + 錯題本",
+  "name": "土地法與稅法・案例邏輯課本",
+  "short_name": "土地法課本",
+  "description": "不動產經紀人 · 土地法與稅法逐條深度課本（案例 × 交叉比對 × 邏輯拆解）",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
