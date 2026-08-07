@@ -1,5 +1,6 @@
 _analyze_freq.py
 _analyze_topics.py
-_dark_preview.html
-_dark_shot.png
+_*.html
+_*.png
+_dk*.html
 .DS_Store
