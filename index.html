@@ -18,6 +18,16 @@
     --paper:#fbf9f4; --ink:#2a2724; --sub:#8a7f70; --line:#e7e0d4;
     --brand:#8a5a2b; --brand2:#b07a3c; --accent:#3b5bdb;
     --ok:#16a34a; --trap:#d6336c; --sidebar:#f3efe6; --mark-bg:transparent;
+    --card:#ffffff; --card2:#fdfcf9; --th:#efe8da; --hover:#ece6d9;
+    --h3:#5c4326; --bq:#4a4038; --btn:#efe8da; --btnh:#e6ddcc; --strong:#3a2f22;
+  }
+  /* 🌙 暖黑護眼模式 */
+  body.dark{
+    --paper:#14120d; --ink:#e9e3d5; --sub:#9a8f7d; --line:#332e25;
+    --brand:#e0aa63; --brand2:#c9924a; --accent:#8fb0ff;
+    --trap:#ff7ba6; --sidebar:#1b1811;
+    --card:#1c1912; --card2:#191610; --th:#262117; --hover:#26211a;
+    --h3:#d8b483; --bq:#d8d0c0; --btn:#26211a; --btnh:#2f2920; --strong:#f2ecdd;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%}
@@ -30,8 +40,8 @@
   #toc .bk small{color:var(--sub);font-size:11.5px}
   #toc .grp{font-size:11px;color:var(--sub);padding:14px 20px 4px;letter-spacing:1.5px;font-weight:700}
   #toc a{display:block;padding:8px 20px 8px 22px;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.5;cursor:pointer;border-left:3px solid transparent}
-  #toc a:hover{background:#ece6d9}
-  #toc a.on{border-left-color:var(--brand);background:#ece6d9;font-weight:700;color:var(--brand)}
+  #toc a:hover{background:var(--hover)}
+  #toc a.on{border-left-color:var(--brand);background:var(--hover);font-weight:700;color:var(--brand)}
   #toc a .n{color:var(--sub);font-size:12px;margin-right:6px}
   /* 閱讀區 */
   #reader{flex:1;overflow-y:auto;scroll-behavior:smooth}
@@ -40,31 +50,34 @@
   .page h1{font-size:26px;margin:6px 0 6px;line-height:1.35;border-bottom:3px solid var(--brand);padding-bottom:16px}
   .page h2{font-size:19px;margin:30px 0 10px;color:var(--brand);display:flex;align-items:center;gap:8px}
   .page h2::before{content:"";width:5px;height:19px;background:var(--brand2);border-radius:2px;flex:0 0 auto}
-  .page h3{font-size:16px;margin:20px 0 6px;color:#5c4326}
+  .page h3{font-size:16px;margin:20px 0 6px;color:var(--h3)}
   .page p{line-height:1.95;font-size:15.5px;margin:11px 0}
   .page li{line-height:1.9;font-size:15px;margin:4px 0}
   .page ul{padding-left:22px;margin:8px 0}
-  .page blockquote{background:#fff;border-left:4px solid var(--brand2);border-radius:6px;
-    padding:12px 16px;margin:14px 0;font-size:15px;line-height:1.85;color:#4a4038}
-  .page table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(120,90,40,.06)}
+  .page blockquote{background:var(--card);border-left:4px solid var(--brand2);border-radius:6px;
+    padding:12px 16px;margin:14px 0;font-size:15px;line-height:1.85;color:var(--bq)}
+  .page table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;background:var(--card);border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(120,90,40,.06)}
   .page th,.page td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;line-height:1.7}
-  .page th{background:#efe8da;color:var(--brand);font-weight:700}
-  .page tr:nth-child(even) td{background:#fdfcf9}
-  .page pre{background:#f4efe6;border:1px solid var(--line);border-radius:8px;padding:14px 16px;
-    font-family:"SF Mono",Menlo,monospace;font-size:13px;line-height:1.7;overflow-x:auto;color:#4a4038;white-space:pre}
-  .page code{background:#f0ebe1;border-radius:4px;padding:1px 6px;font-size:13.5px;color:var(--brand)}
+  .page th{background:var(--th);color:var(--brand);font-weight:700}
+  .page tr:nth-child(even) td{background:var(--card2)}
+  .page pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px 16px;
+    font-family:"SF Mono",Menlo,monospace;font-size:13px;line-height:1.7;overflow-x:auto;color:var(--bq);white-space:pre}
+  .page code{background:var(--th);border-radius:4px;padding:1px 6px;font-size:13.5px;color:var(--brand)}
   .page hr{border:0;border-top:1px dashed var(--line);margin:24px 0}
   mark{background:transparent;color:var(--trap);font-weight:800;padding:0}
-  b{color:#3a2f22}
+  b{color:var(--strong)}
   .wl{color:var(--accent);font-weight:600;border-bottom:1px dotted var(--accent)}
   .pager{display:flex;justify-content:space-between;gap:12px;margin-top:44px;border-top:1px solid var(--line);padding-top:20px}
-  .pager button{flex:1;font-family:inherit;background:#efe8da;color:var(--brand);border:0;border-radius:12px;
+  .pager button{flex:1;font-family:inherit;background:var(--btn);color:var(--brand);border:0;border-radius:12px;
     padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;text-align:left;line-height:1.4}
-  .pager button:hover{background:#e6ddcc}
+  .pager button:hover{background:var(--btnh)}
   .pager button:disabled{opacity:.35;cursor:default}
   .pager .lbl{display:block;font-size:11px;color:var(--sub);font-weight:400;margin-bottom:2px}
   .pager .nx{text-align:right}
   #menuBtn{display:none}
+  #themeBtn{position:fixed;top:calc(14px + env(safe-area-inset-top));right:16px;z-index:30;
+    width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--sidebar);color:var(--brand);
+    font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
   .barwrap{position:sticky;top:0;height:4px;background:var(--line);z-index:5}
   #bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand2),var(--brand))}
   @media(max-width:860px){
@@ -78,6 +91,7 @@
 </head>
 <body>
 <button id="menuBtn" onclick="document.getElementById('toc').classList.toggle('open')">☰</button>
+<button id="themeBtn" title="切換深色／淺色" aria-label="切換深色淺色">🌙</button>
 <nav id="toc"></nav>
 <main id="reader"><div class="barwrap"><div id="bar"></div></div><div class="page" id="page"></div></main>
 
@@ -86,6 +100,22 @@
 const BOOK = window.BOOK || [];
 const KEY="kaben_last_v1";
 let cur=+(localStorage.getItem(KEY)||0);
+
+/* ---- 深色／淺色主題切換（記住選擇） ---- */
+const TKEY="kaben_theme";
+const tbtn=document.getElementById('themeBtn');
+function applyTheme(t){
+  document.body.classList.toggle('dark', t==='dark');
+  tbtn.textContent = t==='dark' ? '☀️' : '🌙';
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', t==='dark' ? '#14120d' : '#8a5a2b');
+}
+applyTheme(localStorage.getItem(TKEY)||'light');
+tbtn.onclick=()=>{
+  const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+  localStorage.setItem(TKEY, next);
+  applyTheme(next);
+};
 if(cur<0||cur>=BOOK.length)cur=0;
 
 /* ---- 迷你 Markdown 渲染(支援標題/表格/清單/引言/程式框/粗體/mark/wikilink) ---- */
