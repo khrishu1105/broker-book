@@ -64,6 +64,12 @@
     font-family:"SF Mono",Menlo,monospace;font-size:13px;line-height:1.7;overflow-x:auto;color:var(--bq);white-space:pre}
   .page code{background:var(--th);border-radius:4px;padding:1px 6px;font-size:13.5px;color:var(--brand)}
   .page hr{border:0;border-top:1px dashed var(--line);margin:24px 0}
+  .chaptoc{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:16px 0 26px}
+  .chaptoc .ct-h{font-size:12.5px;color:var(--sub);font-weight:700;letter-spacing:1.5px;margin-bottom:10px}
+  .chaptoc .ct-links{display:flex;flex-wrap:wrap;gap:8px}
+  .chaptoc a{display:inline-block;background:var(--btn);color:var(--brand);border:1px solid var(--line);
+    border-radius:999px;padding:6px 13px;font-size:13px;line-height:1.4;cursor:pointer;text-decoration:none;font-weight:600}
+  .chaptoc a:hover{background:var(--hover)}
   mark{background:transparent;color:var(--trap);font-weight:800;padding:0}
   b{color:var(--strong);font-weight:800}
   .wl{color:var(--accent);font-weight:600;border-bottom:1px dotted var(--accent)}
@@ -170,6 +176,21 @@ function render(){
       <button ${cur===0?'disabled':''} id="prev"><span class="lbl">← 上一章</span>${cur>0?BOOK[cur-1].title:''}</button>
       <button ${cur===BOOK.length-1?'disabled':''} id="next" class="nx"><span class="lbl">下一章 →</span>${cur<BOOK.length-1?BOOK[cur+1].title:''}</button>
     </div>`;
+  // 📑 本章目錄（點分類跳到該段）
+  const heads=[...p.querySelectorAll('h2')];
+  if(heads.length>=3){
+    heads.forEach((h,i)=>h.id='sec'+i);
+    const nav=document.createElement('nav');
+    nav.className='chaptoc';
+    nav.innerHTML='<div class="ct-h">📑 本章目錄</div><div class="ct-links">'+
+      heads.map((h,i)=>`<a data-s="${i}">${h.textContent}</a>`).join('')+'</div>';
+    const h1=p.querySelector('h1');
+    if(h1)h1.after(nav); else p.insertBefore(nav,p.firstChild.nextSibling);
+    nav.querySelectorAll('a').forEach(a=>a.onclick=()=>{
+      const t=document.getElementById('sec'+a.dataset.s);
+      if(t)t.scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  }
   const pv=document.getElementById('prev'),nx=document.getElementById('next');
   if(pv&&cur>0)pv.onclick=()=>{cur--;render();};
   if(nx&&cur<BOOK.length-1)nx.onclick=()=>{cur++;render();};
