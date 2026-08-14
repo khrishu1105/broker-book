@@ -1,5 +1,7 @@
 _analyze_freq.py
 _analyze_topics.py
+_*.py
+_*.md
 _*.html
 _*.png
 _dk*.html
