@@ -85,6 +85,18 @@
     font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
   .barwrap{position:sticky;top:0;height:4px;background:var(--line);z-index:5}
   #bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand2),var(--brand))}
+  /* 詞彙彈窗 */
+  .gl{color:var(--accent);font-weight:700;border-bottom:1px dashed var(--accent);cursor:pointer}
+  #glmodal{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:20px}
+  #glbox{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:14px;max-width:640px;width:100%;max-height:82vh;overflow-y:auto;padding:22px 22px 24px;position:relative;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+  #glbox h3{margin:0 26px 10px 0;color:var(--brand);font-size:17px}
+  #glbox p{line-height:1.85;font-size:14.5px;margin:9px 0}
+  #glbox p.glnote{color:var(--sub);font-size:13px}
+  #glbox table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;background:var(--card);border-radius:8px;overflow:hidden}
+  #glbox th,#glbox td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;line-height:1.6}
+  #glbox th{background:var(--th);color:var(--brand)}
+  #glbox tr:nth-child(even) td{background:var(--card2)}
+  #glclose{position:absolute;top:10px;right:12px;border:0;background:var(--btn);color:var(--brand);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer}
   @media(max-width:860px){
     #toc{position:fixed;left:-300px;top:0;bottom:0;z-index:20;transition:.25s;box-shadow:2px 0 14px rgba(0,0,0,.12)}
     #toc.open{left:0}
@@ -99,11 +111,29 @@
 <button id="themeBtn" title="切換深色／淺色" aria-label="切換深色淺色">🌙</button>
 <nav id="toc"></nav>
 <main id="reader"><div class="barwrap"><div id="bar"></div></div><div class="page" id="page"></div></main>
+<div id="glmodal"><div id="glbox"><button id="glclose" aria-label="關閉">✕</button><div id="glbody"></div></div></div>
 
 <script src="data/book.js"></script>
 <script>
 const BOOK = window.BOOK || [];
 const KEY="kaben_last_v1";
+/* ---- 詞彙彈窗：文中出現這些詞→可點→跳出統整卡 ---- */
+window.GLOSSARY = {
+ "地價評議委員會": `<h3>地價及標準地價評議委員會</h3>
+<p><b>誰設</b>：直轄市／縣（市）政府。<b>組成</b>（平權§4）：機關代表＋地政・不動產估價・法律・工程・都計之專家學者或民間團體代表（專家＋民間代表不得少於½）；土地法§155另要求有地方民意代表。</p>
+<p><b>它是「政府認定地價」的把關者</b>——凡下列地價／地上物價額都經它評定：</p>
+<table><thead><tr><th>場合</th><th>評定什麼</th><th>條號</th></tr></thead><tbody>
+<tr><td>公告地價（規定地價）</td><td>區段地價</td><td>平權§15</td></tr>
+<tr><td>公告土地現值</td><td>區段地價（每年1/1公告）</td><td>平權§46</td></tr>
+<tr><td>徵收補償市價</td><td>徵收當期市價（每6月評變動）</td><td>土徵§30</td></tr>
+<tr><td>徵收補償異議復議</td><td>對查處不服→復議</td><td>土徵§22</td></tr>
+<tr><td>照價收買建物價額</td><td>地上改良物價額</td><td>平權§34</td></tr>
+<tr><td>區段徵收抵價地</td><td>路線價／區段價</td><td>土徵§45</td></tr>
+<tr><td>公設保留地加成補償</td><td>加成成數（最高40%）</td><td>都計§49</td></tr>
+<tr><td>徵收改良物估定異議</td><td>改良物價額</td><td>土地法§247</td></tr>
+</tbody></table>
+<p class="glnote">一句話：凡「政府說了算的地價／地上物價額」都經它把關評定。</p>`
+};
 let cur=+(localStorage.getItem(KEY)||0);
 
 /* ---- 深色／淺色主題切換（記住選擇） ---- */
@@ -123,12 +153,20 @@ tbtn.onclick=()=>{
 };
 if(cur<0||cur>=BOOK.length)cur=0;
 
+/* ---- 詞彙彈窗開關 ---- */
+function openGl(term){const g=window.GLOSSARY&&window.GLOSSARY[term];if(!g)return;document.getElementById('glbody').innerHTML=g;document.getElementById('glmodal').style.display='flex';}
+(function(){const glm=document.getElementById('glmodal');
+  document.getElementById('glclose').onclick=()=>glm.style.display='none';
+  glm.onclick=e=>{if(e.target===glm)glm.style.display='none';};
+})();
+
 /* ---- 迷你 Markdown 渲染(支援標題/表格/清單/引言/程式框/粗體/mark/wikilink) ---- */
 function inline(s){
   s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
   s=s.replace(/\*\*([^*]+?)\*\*/g,'<b>$1</b>');
   s=s.replace(/【([^】]+)】/g,'<mark>$1</mark>');
   s=s.replace(/\[\[([^\]]+)\]\]/g,(m,p)=>'<span class="wl">'+p.split('|').pop()+'</span>');
+  if(window.GLOSSARY){for(const term in window.GLOSSARY){if(s.indexOf(term)!==-1){s=s.split(term).join('<span class="gl" data-term="'+term+'">'+term+'</span>');}}}
   return s;
 }
 function mdToHtml(md){
@@ -189,6 +227,8 @@ function render(){
     </div>`;
   // 指派段落錨點（供左側目錄小節跳段）
   p.querySelectorAll('h2').forEach((h,i)=>h.id='sec'+i);
+  // 詞彙可點→彈窗
+  p.querySelectorAll('.gl').forEach(el=>el.onclick=()=>openGl(el.dataset.term));
   const pv=document.getElementById('prev'),nx=document.getElementById('next');
   if(pv&&cur>0)pv.onclick=()=>{cur--;render();};
   if(nx&&cur<BOOK.length-1)nx.onclick=()=>{cur++;render();};
