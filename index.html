@@ -40,6 +40,9 @@
   #toc .bk{padding:0 20px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
   #toc .bk h1{font-size:16px;margin:0 0 3px;letter-spacing:.5px;color:var(--brand)}
   #toc .bk small{color:var(--sub);font-size:11.5px}
+  #toc .subjtabs{display:flex;gap:6px;padding:14px 14px 6px;flex-wrap:wrap}
+  #toc .subjtab{flex:1;min-width:118px;padding:9px 8px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--sub);font-size:13px;font-weight:700;cursor:pointer}
+  #toc .subjtab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
   #toc .grp{font-size:11px;color:var(--sub);padding:14px 20px 4px;letter-spacing:1.5px;font-weight:700}
   #toc a{display:block;padding:8px 20px 8px 22px;color:var(--ink);text-decoration:none;font-size:14px;line-height:1.5;cursor:pointer;border-left:3px solid transparent}
   #toc a:hover{background:var(--hover)}
@@ -122,6 +125,14 @@
 <script>
 const BOOK = window.BOOK || [];
 const KEY="kaben_last_v1";
+/* ---- 科目切換：估價概要獨立成冊 ---- */
+const SUBJECTS=[
+  {key:'land', name:'土地法與土地相關稅法', tab:'📗 土地法與稅法', sub:'案例 × 交叉比對 × 邏輯拆解｜不動產經紀人', match:c=>c.grp!=='估價概要'},
+  {key:'appr', name:'不動產估價概要', tab:'📐 估價概要', sub:'原則 × 方法 × 計算題｜不動產經紀人', match:c=>c.grp==='估價概要'},
+];
+function chaptersOf(key){const s=SUBJECTS.find(x=>x.key===key)||SUBJECTS[0];return BOOK.map((c,i)=>({c,i})).filter(x=>s.match(x.c));}
+function subjOfIdx(i){const c=BOOK[i]||BOOK[0];return (SUBJECTS.find(s=>s.match(c))||SUBJECTS[0]).key;}
+function curSubject(){return localStorage.getItem('kaben_subj')||SUBJECTS[0].key;}
 /* ---- 詞彙彈窗：文中出現這些詞→可點→跳出統整卡 ---- */
 window.GLOSSARY = {
  "地價評議委員會": `<h3>地價及標準地價評議委員會</h3>
@@ -176,6 +187,7 @@ tbtn.onclick=()=>{
   applyTheme(next);
 };
 if(cur<0||cur>=BOOK.length)cur=0;
+localStorage.setItem('kaben_subj', subjOfIdx(cur)); /* 開啟時科目對齊最後閱讀章 */
 
 /* ---- 詞彙彈窗開關 ---- */
 function openGl(term){const g=window.GLOSSARY&&window.GLOSSARY[term];if(!g)return;document.getElementById('glbody').innerHTML=g;document.getElementById('glmodal').style.display='flex';}
@@ -223,16 +235,24 @@ function secHeads(md){
   const out=[];md.split('\n').forEach(l=>{const m=l.match(/^##\s+(.*)/);if(m)out.push(m[1]);});return out;
 }
 function buildTOC(){
-  let last=null,html='<div class="bk"><h1>土地法與土地相關稅法</h1><small>案例 × 交叉比對 × 邏輯拆解｜不動產經紀人</small></div>';
-  BOOK.forEach((c,i)=>{
+  const sk=curSubject(), sub=SUBJECTS.find(s=>s.key===sk)||SUBJECTS[0];
+  let html='<div class="subjtabs">'+SUBJECTS.map(s=>`<button class="subjtab ${s.key===sk?'on':''}" data-subj="${s.key}">${s.tab}</button>`).join('')+'</div>';
+  html+=`<div class="bk"><h1>${sub.name}</h1><small>${sub.sub}</small></div>`;
+  let last=null,n=0;
+  chaptersOf(sk).forEach(({c,i})=>{
+    n++;
     if(c.grp!==last){html+=`<div class="grp">${c.grp}</div>`;last=c.grp;}
     const hs=secHeads(c.md), on=(i===cur);
-    html+=`<a data-i="${i}" class="${on?'on':''}">${hs.length>=2?'<span class="tw">'+(on?'▾':'▸')+'</span>':'<span class="tw"></span>'}<span class="n">${i+1}</span>${c.title}</a>`;
+    html+=`<a data-i="${i}" class="${on?'on':''}">${hs.length>=2?'<span class="tw">'+(on?'▾':'▸')+'</span>':'<span class="tw"></span>'}<span class="n">${n}</span>${c.title}</a>`;
     if(on&&hs.length>=2){
       html+='<div class="subtoc">'+hs.map((h,si)=>`<a class="sub" data-sec="${si}">${h}</a>`).join('')+'</div>';
     }
   });
   const t=document.getElementById('toc');t.innerHTML=html;
+  t.querySelectorAll('.subjtab').forEach(b=>b.onclick=()=>{
+    localStorage.setItem('kaben_subj',b.dataset.subj);
+    const list=chaptersOf(b.dataset.subj);cur=list.length?list[0].i:0;render();
+  });
   t.querySelectorAll('a[data-i]').forEach(a=>a.onclick=()=>{cur=+a.dataset.i;render();document.getElementById('toc').classList.remove('open');});
   t.querySelectorAll('a.sub').forEach(a=>a.onclick=()=>{
     const el=document.getElementById('sec'+a.dataset.sec);
@@ -245,18 +265,20 @@ function render(){
   buildTOC();
   const c=BOOK[cur];const p=document.getElementById('page');
   document.getElementById('reader').scrollTop=0;
+  const list=chaptersOf(curSubject()), pos=list.findIndex(x=>x.i===cur);
+  const prevI=pos>0?list[pos-1].i:-1, nextI=(pos>=0&&pos<list.length-1)?list[pos+1].i:-1;
   p.innerHTML=`<div class="cgrp">${c.grp}</div>`+mdToHtml(c.md)+
     `<div class="pager">
-      <button ${cur===0?'disabled':''} id="prev"><span class="lbl">← 上一章</span>${cur>0?BOOK[cur-1].title:''}</button>
-      <button ${cur===BOOK.length-1?'disabled':''} id="next" class="nx"><span class="lbl">下一章 →</span>${cur<BOOK.length-1?BOOK[cur+1].title:''}</button>
+      <button ${prevI<0?'disabled':''} id="prev"><span class="lbl">← 上一章</span>${prevI>=0?BOOK[prevI].title:''}</button>
+      <button ${nextI<0?'disabled':''} id="next" class="nx"><span class="lbl">下一章 →</span>${nextI>=0?BOOK[nextI].title:''}</button>
     </div>`;
   // 指派段落錨點（供左側目錄小節跳段）
   p.querySelectorAll('h2').forEach((h,i)=>h.id='sec'+i);
   // 詞彙可點→彈窗
   p.querySelectorAll('.gl').forEach(el=>el.onclick=()=>openGl(el.dataset.term));
   const pv=document.getElementById('prev'),nx=document.getElementById('next');
-  if(pv&&cur>0)pv.onclick=()=>{cur--;render();};
-  if(nx&&cur<BOOK.length-1)nx.onclick=()=>{cur++;render();};
+  if(pv&&prevI>=0)pv.onclick=()=>{cur=prevI;render();};
+  if(nx&&nextI>=0)nx.onclick=()=>{cur=nextI;render();};
 }
 document.getElementById('reader').addEventListener('scroll',e=>{
   const el=e.target;const pct=el.scrollTop/(el.scrollHeight-el.clientHeight||1)*100;
