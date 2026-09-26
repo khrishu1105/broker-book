@@ -125,10 +125,11 @@
 <script>
 const BOOK = window.BOOK || [];
 const KEY="kaben_last_v1";
-/* ---- 科目切換：估價概要獨立成冊 ---- */
+/* ---- 科目切換：估價概要、經紀相關法規各自獨立成冊 ---- */
 const SUBJECTS=[
-  {key:'land', name:'土地法與土地相關稅法', tab:'📗 土地法與稅法', sub:'案例 × 交叉比對 × 邏輯拆解｜不動產經紀人', match:c=>c.grp!=='估價概要'},
+  {key:'land', name:'土地法與土地相關稅法', tab:'📗 土地法與稅法', sub:'案例 × 交叉比對 × 邏輯拆解｜不動產經紀人', match:c=>c.grp!=='估價概要'&&c.grp!=='經紀相關法規'},
   {key:'appr', name:'不動產估價概要', tab:'📐 估價概要', sub:'原則 × 方法 × 計算題｜不動產經紀人', match:c=>c.grp==='估價概要'},
+  {key:'agent', name:'不動產經紀相關法規', tab:'📕 經紀法規', sub:'經紀業 × 公寓大廈 × 消保 × 公平｜不動產經紀人', match:c=>c.grp==='經紀相關法規'},
 ];
 function chaptersOf(key){const s=SUBJECTS.find(x=>x.key===key)||SUBJECTS[0];return BOOK.map((c,i)=>({c,i})).filter(x=>s.match(x.c));}
 function subjOfIdx(i){const c=BOOK[i]||BOOK[0];return (SUBJECTS.find(s=>s.match(c))||SUBJECTS[0]).key;}
