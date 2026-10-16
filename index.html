@@ -144,6 +144,21 @@
   .qzwq{font-weight:600;line-height:1.6;margin-bottom:8px;font-size:14px}
   .qzwo{font-size:13px;line-height:1.7;color:var(--sub)}
   .qzwo.r{color:#1f7a3f;font-weight:700}
+  /* 按鈕回饋感 */
+  .qzbtn,.qzopt{transition:transform .08s ease, box-shadow .15s, filter .15s, background .15s, border-color .15s}
+  .qzbtn:active{transform:scale(.97)}
+  .qzopt:active:not(.dis){transform:scale(.99)}
+  .qzbtn.big{box-shadow:0 3px 10px rgba(138,90,43,.28)}
+  .qzbtn.big:active{box-shadow:0 1px 4px rgba(138,90,43,.3)}
+  @media(hover:hover){.qzbtn.big:hover{filter:brightness(1.07)}.qzbtn.ghost:hover{background:var(--hover)}.qzopt:hover:not(.dis){border-color:var(--brand);background:var(--hover)}}
+  /* 吉祥物 福寶 */
+  .qzmas{display:flex;align-items:flex-start;gap:10px;margin:12px 0;animation:qzpop .28s ease}
+  .qzmas .face{font-size:34px;flex:0 0 auto;line-height:1;filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
+  .qzmas .bub{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:13px;border-top-left-radius:3px;padding:9px 13px;font-size:14px;line-height:1.6;font-weight:600;flex:1}
+  .qzmas.ok .bub{border-color:#1f7a3f;color:#1f7a3f;background:rgba(31,122,63,.06)}
+  .qzmas.no .bub{border-color:#c0632f;color:#b45309;background:rgba(192,99,47,.06)}
+  @keyframes qzpop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
+  .qzsug{background:var(--card);border-left:4px solid var(--accent);border-radius:8px;padding:11px 13px;margin:12px 0;font-size:14px;line-height:1.85}
 </style>
 </head>
 <body>
@@ -346,6 +361,9 @@ function wbSave(a){localStorage.setItem(WBKEY,JSON.stringify(a))}
 function wbAdd(q){const a=wbGet();const id=q.s+q.y+'#'+q.n;if(!a.some(x=>x.s+x.y+'#'+x.n===id)){a.push(q);wbSave(a)}}
 function qzShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function qzEsc(s){return (''+s).replace(/</g,'&lt;')}
+const QZMAS_OK=['答對了！就是這個手感 🎉','漂亮，穩穩的 💪','正解！你記住了 ✨','太棒了，繼續保持 🔥','沒錯就是它，手感來了 😎','這題你完全看穿了 👏'];
+const QZMAS_NO=['別灰心，現在記起來就賺到了 📝','差一點！這題陷阱很賊 🫣','錯過一次，下次就認得了 👀','沒關係，這題本來就愛坑人 💡','已記進錯題本，它跑不掉了 ✊','冷靜看詳解，下輪扳回來 🧠'];
+function qzPick(a){return a[Math.floor(Math.random()*a.length)]}
 let QZ=null;
 function qzOpen(){document.getElementById('quizmodal').style.display='flex';qzSetup();}
 function qzClose(){document.getElementById('quizmodal').style.display='none';}
@@ -389,6 +407,7 @@ function qzAnswer(i){
   if(ok){QZ.score++}else{document.getElementById('qzo'+i).classList.add('wrong');QZ.wrong.push(q);wbAdd(q);}
   const last=QZ.idx===QZ.pool.length-1;
   document.getElementById('qzfb').innerHTML=
+    `<div class="qzmas ${ok?'ok':'no'}"><div class="face">🦉</div><div class="bub">${ok?qzPick(QZMAS_OK):qzPick(QZMAS_NO)}</div></div>`+
     `<div class="qzres ${ok?'okk':'nok'}">${ok?'✅ 答對了！':'❌ 答錯了（正解 '+'ABCD'[q.a]+'）'}</div>`+
     `<div class="qzexp"><b>詳解</b>　${qzEsc(q.e)}</div>`+
     `<button class="qzbtn big" onclick="qzNext()">${last?'看結果 🏁':'下一題 →'}</button>`;
@@ -396,9 +415,18 @@ function qzAnswer(i){
 function qzNext(){QZ.idx++;if(QZ.idx>=QZ.pool.length)qzResult();else qzQuestion();}
 function qzResult(){
   const n=QZ.pool.length,s=QZ.score,pct=Math.round(s/n*100);
-  let h=`<h2 class="qzh">🏁 結算</h2><div class="qzscore">${s} / ${n}　<span>答對率 ${pct}%</span></div>`;
+  let msg;
+  if(pct===100)msg='滿分！你根本是經紀人本人了 👑';
+  else if(pct>=80)msg='穩！這科你快出師了，保持手感 🎯';
+  else if(pct>=60)msg='不錯喔，再刷幾輪就穩了 💪';
+  else msg='別急，錯題本就是你的寶藏，回去複習再戰 📚';
+  let h=`<h2 class="qzh">🏁 結算</h2>`;
+  h+=`<div class="qzmas ${pct>=60?'ok':'no'}"><div class="face">🦉</div><div class="bub">${msg}</div></div>`;
+  h+=`<div class="qzscore">${s} / ${n}　<span>答對率 ${pct}%</span></div>`;
   if(QZ.wrong.length){
     window.__qzw=QZ.wrong.slice();
+    const tops=[...new Set(QZ.wrong.map(q=>q.t||q.s))];
+    h+=`<div class="qzsug">📚 <b>建議回去複習：</b>${tops.map(qzEsc).join('、')}</div>`;
     h+='<div class="qzlbl">本次錯題（已存入錯題本）</div>';
     h+=QZ.wrong.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div><div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div></div>`).join('');
     h+='<button class="qzbtn big" onclick="qzStart(window.__qzw)">只練本次錯題 🔁</button>';
