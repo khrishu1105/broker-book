@@ -112,16 +112,51 @@
       width:44px;height:44px;border-radius:11px;align-items:center;justify-content:center;font-size:20px;border:0;cursor:pointer}
     .page{padding:calc(60px + env(safe-area-inset-top)) 20px 100px}
   }
+  /* 刷題模式 */
+  #quizBtn{position:fixed;top:calc(14px + env(safe-area-inset-top));right:66px;z-index:30;
+    width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--sidebar);color:var(--brand);
+    font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  #quizmodal{display:none;position:fixed;inset:0;z-index:60;background:var(--paper);flex-direction:column}
+  #qzhead{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;background:var(--brand);color:#fff;font-weight:800;font-size:16px}
+  #qzhead button{background:rgba(255,255,255,.2);color:#fff;border:0;width:34px;height:34px;border-radius:50%;font-size:16px;cursor:pointer}
+  #qzbody{flex:1;overflow-y:auto;padding:18px;max-width:720px;margin:0 auto;width:100%;box-sizing:border-box}
+  .qzh{color:var(--brand);font-size:18px;margin:4px 0 14px}
+  .qzlbl{font-weight:700;color:var(--sub);margin:16px 0 8px;font-size:13px}
+  .qzchk{display:flex;flex-wrap:wrap;gap:8px}
+  .qzchk label{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px}
+  .qzbtn{display:block;width:100%;margin:10px 0 0;padding:13px;border-radius:10px;border:0;font-size:15px;font-weight:700;cursor:pointer;background:var(--card);color:var(--ink)}
+  .qzbtn.big{background:var(--brand);color:#fff}
+  .qzbtn.ghost{background:var(--card);color:var(--brand);border:1px solid var(--line)}
+  .qzprog{font-size:13px;color:var(--sub);margin-bottom:10px}
+  .qztag{background:var(--card);padding:2px 8px;border-radius:6px;margin-left:6px}
+  .qzq{font-size:16px;font-weight:600;line-height:1.75;margin-bottom:14px}
+  .qzopt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font-size:14.5px;line-height:1.6;cursor:pointer}
+  .qzopt.dis{cursor:default;opacity:.95}
+  .qzopt.right{background:#1f7a3f;border-color:#1f7a3f;color:#fff}
+  .qzopt.wrong{background:#b23b3b;border-color:#b23b3b;color:#fff}
+  .qzres{font-size:16px;font-weight:800;margin:14px 0 8px}
+  .qzres.okk{color:#1f7a3f}.qzres.nok{color:#b23b3b}
+  .qzexp{background:var(--card);border-left:4px solid var(--brand);border-radius:8px;padding:11px 13px;line-height:1.75;font-size:14px;margin:8px 0}
+  .qzexp.sm{font-size:13px}
+  .qzscore{font-size:24px;font-weight:800;color:var(--brand);margin:10px 0}
+  .qzscore span{font-size:15px;color:var(--sub);font-weight:600}
+  .qzwrong{background:var(--card);border-radius:8px;padding:12px;margin:10px 0;border:1px solid var(--line)}
+  .qzwq{font-weight:600;line-height:1.6;margin-bottom:8px;font-size:14px}
+  .qzwo{font-size:13px;line-height:1.7;color:var(--sub)}
+  .qzwo.r{color:#1f7a3f;font-weight:700}
 </style>
 </head>
 <body>
 <button id="menuBtn" onclick="document.getElementById('toc').classList.toggle('open')">☰</button>
 <button id="themeBtn" title="切換深色／淺色" aria-label="切換深色淺色">🌙</button>
+<button id="quizBtn" title="刷題" aria-label="刷題" onclick="qzOpen()">🎯</button>
 <nav id="toc"></nav>
 <main id="reader"><div class="barwrap"><div id="bar"></div></div><div class="page" id="page"></div></main>
 <div id="glmodal"><div id="glbox"><button id="glclose" aria-label="關閉">✕</button><div id="glbody"></div></div></div>
+<div id="quizmodal"><div id="qzhead"><span>🎯 刷題練習</span><button onclick="qzClose()" aria-label="關閉">✕</button></div><div id="qzbody"></div></div>
 
 <script src="data/book.js"></script>
+<script src="data/quiz.js"></script>
 <script>
 const BOOK = window.BOOK || [];
 const KEY="kaben_last_v1";
@@ -302,6 +337,90 @@ document.getElementById('reader').addEventListener('scroll',e=>{
   document.getElementById('bar').style.width=pct+'%';
 });
 render();
+
+/* ===== 刷題引擎 ===== */
+const QUIZ = window.QUIZ || [];
+const WBKEY='kaben_wrongbook';
+function wbGet(){try{return JSON.parse(localStorage.getItem(WBKEY)||'[]')}catch(e){return[]}}
+function wbSave(a){localStorage.setItem(WBKEY,JSON.stringify(a))}
+function wbAdd(q){const a=wbGet();const id=q.s+q.y+'#'+q.n;if(!a.some(x=>x.s+x.y+'#'+x.n===id)){a.push(q);wbSave(a)}}
+function qzShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function qzEsc(s){return (''+s).replace(/</g,'&lt;')}
+let QZ=null;
+function qzOpen(){document.getElementById('quizmodal').style.display='flex';qzSetup();}
+function qzClose(){document.getElementById('quizmodal').style.display='none';}
+function qzSetup(){
+  const subs=[...new Set(QUIZ.map(q=>q.s))];
+  const yrs=[...new Set(QUIZ.map(q=>q.y))].sort((a,b)=>b-a);
+  const nb=wbGet().length;
+  let h='<h2 class="qzh">🎯 刷題設定</h2>';
+  h+='<div class="qzlbl">科目（可複選）</div><div class="qzchk" id="qzsub">'+subs.map(s=>`<label><input type="checkbox" value="${s}" checked> ${s}</label>`).join('')+'</div>';
+  h+='<div class="qzlbl">年份（可複選）</div><div class="qzchk" id="qzyr">'+yrs.map(y=>`<label><input type="checkbox" value="${y}" checked> 民${y}</label>`).join('')+'</div>';
+  h+='<div class="qzlbl">題數</div><div class="qzchk" id="qznum">'+[10,20,30,0].map(n=>`<label><input type="radio" name="qnum" value="${n}" ${n===10?'checked':''}> ${n===0?'全部':n+'題'}</label>`).join('')+'</div>';
+  h+='<button class="qzbtn big" onclick="qzStart()">開始刷題 ▶</button>';
+  h+=`<button class="qzbtn ghost" onclick="qzWrongbook()">📕 我的錯題本（${nb}）</button>`;
+  document.getElementById('qzbody').innerHTML=h;
+}
+function qzChk(id){return [...document.querySelectorAll('#'+id+' input:checked')].map(i=>i.value)}
+function qzStart(pool){
+  if(!pool){
+    const subs=qzChk('qzsub'), yrs=qzChk('qzyr').map(Number);
+    const n=+(document.querySelector('#qznum input:checked')||{value:0}).value;
+    pool=QUIZ.filter(q=>subs.includes(q.s)&&yrs.includes(q.y));
+    pool=qzShuffle(pool.slice()); if(n>0)pool=pool.slice(0,n);
+  }else{pool=qzShuffle(pool.slice());}
+  if(!pool.length){alert('沒有符合條件的題目，請重新勾選。');return;}
+  QZ={pool,idx:0,score:0,wrong:[],answered:false};qzQuestion();
+}
+function qzQuestion(){
+  const q=QZ.pool[QZ.idx];QZ.answered=false;
+  let h=`<div class="qzprog">第 ${QZ.idx+1} / ${QZ.pool.length} 題<span class="qztag">${q.s} 民${q.y}#${q.n}</span></div>`;
+  h+=`<div class="qzq">${qzEsc(q.q)}</div>`;
+  h+='<div>'+q.o.map((o,i)=>`<button class="qzopt" id="qzo${i}" onclick="qzAnswer(${i})">${'ABCD'[i]}. ${qzEsc(o)}</button>`).join('')+'</div>';
+  h+='<div id="qzfb"></div>';
+  const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
+}
+function qzAnswer(i){
+  if(QZ.answered)return;QZ.answered=true;
+  const q=QZ.pool[QZ.idx];
+  document.querySelectorAll('.qzopt').forEach(b=>b.classList.add('dis'));
+  document.getElementById('qzo'+q.a).classList.add('right');
+  const ok=i===q.a;
+  if(ok){QZ.score++}else{document.getElementById('qzo'+i).classList.add('wrong');QZ.wrong.push(q);wbAdd(q);}
+  const last=QZ.idx===QZ.pool.length-1;
+  document.getElementById('qzfb').innerHTML=
+    `<div class="qzres ${ok?'okk':'nok'}">${ok?'✅ 答對了！':'❌ 答錯了（正解 '+'ABCD'[q.a]+'）'}</div>`+
+    `<div class="qzexp"><b>詳解</b>　${qzEsc(q.e)}</div>`+
+    `<button class="qzbtn big" onclick="qzNext()">${last?'看結果 🏁':'下一題 →'}</button>`;
+}
+function qzNext(){QZ.idx++;if(QZ.idx>=QZ.pool.length)qzResult();else qzQuestion();}
+function qzResult(){
+  const n=QZ.pool.length,s=QZ.score,pct=Math.round(s/n*100);
+  let h=`<h2 class="qzh">🏁 結算</h2><div class="qzscore">${s} / ${n}　<span>答對率 ${pct}%</span></div>`;
+  if(QZ.wrong.length){
+    window.__qzw=QZ.wrong.slice();
+    h+='<div class="qzlbl">本次錯題（已存入錯題本）</div>';
+    h+=QZ.wrong.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div><div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div></div>`).join('');
+    h+='<button class="qzbtn big" onclick="qzStart(window.__qzw)">只練本次錯題 🔁</button>';
+  }else{h+='<div class="qzexp">全部答對，太強了！🎉</div>';}
+  h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
+  const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
+}
+function qzWrongbook(){
+  const a=wbGet();
+  let h='<h2 class="qzh">📕 我的錯題本</h2>';
+  if(!a.length){h+='<div class="qzexp">目前沒有錯題，先去刷題吧！</div>';}
+  else{
+    h+=`<div class="qzlbl">共 ${a.length} 題</div>`;
+    h+=a.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div>`+
+      q.o.map((o,i)=>`<div class="qzwo ${i===q.a?'r':''}">${'ABCD'[i]}. ${qzEsc(o)}</div>`).join('')+
+      `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div></div>`).join('');
+    h+='<button class="qzbtn big" onclick="qzStart(wbGet())">🔁 練習全部錯題</button>';
+    h+='<button class="qzbtn ghost" onclick="if(confirm(\'確定清空錯題本？\')){wbSave([]);qzWrongbook();}">🗑️ 清空錯題本</button>';
+  }
+  h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
+  const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
+}
 </script>
 <script>
 /* 註冊 Service Worker → 支援離線複習 */
