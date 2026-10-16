@@ -389,6 +389,7 @@ function sbToggle(){const q=QZ.pool[QZ.idx];const id=qzId(q);const a=sbGet();
   const btn=document.getElementById('qzsavebtn');if(btn){const on=sbHas(q);btn.className='qzbtn star'+(on?' on':'');btn.textContent=on?'⭐ 已收藏（點擊取消）':'☆ 收藏此題複習';}}
 function qzShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function qzEsc(s){return (''+s).replace(/</g,'&lt;')}
+function qzFmt(s){return (''+s).replace(/</g,'&lt;').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')}
 const QZMAS_OK=['答對了！就是這個手感 🎉','漂亮，穩穩的 💪','正解！你記住了 ✨','太棒了，繼續保持 🔥','沒錯就是它，手感來了 😎','這題你完全看穿了 👏'];
 const QZMAS_NO=['別灰心，現在記起來就賺到了 📝','差一點！這題陷阱很賊 🫣','錯過一次，下次就認得了 👀','沒關係，這題本來就愛坑人 💡','已記進錯題本，它跑不掉了 ✊','冷靜看詳解，下輪扳回來 🧠'];
 function qzPick(a){return a[Math.floor(Math.random()*a.length)]}
@@ -438,7 +439,7 @@ function qzAnswer(i){
   document.getElementById('qzfb').innerHTML=
     `<div class="qzmas ${ok?'ok':'no'}"><div class="face">🦉</div><div class="bub">${ok?qzPick(QZMAS_OK):qzPick(QZMAS_NO)}</div></div>`+
     `<div class="qzres ${ok?'okk':'nok'}">${ok?'✅ 答對了！':'❌ 答錯了（正解 '+'ABCD'[q.a]+'）'}</div>`+
-    `<div class="qzexp"><b>詳解</b>　${qzEsc(q.e)}</div>`+
+    `<div class="qzexp"><b>詳解</b>　${qzFmt(q.e)}</div>`+
     `<button id="qzsavebtn" class="qzbtn star${sbHas(q)?' on':''}" onclick="sbToggle()">${sbHas(q)?'⭐ 已收藏（點擊取消）':'☆ 收藏此題複習'}</button>`+
     `<button class="qzbtn big" onclick="qzNext()">${last?'看結果 🏁':'下一題 →'}</button>`;
 }
@@ -458,7 +459,7 @@ function qzResult(){
     const tops=[...new Set(QZ.wrong.map(q=>q.t||q.s))];
     h+=`<div class="qzsug">📚 <b>建議回去複習：</b>${tops.map(qzEsc).join('、')}</div>`;
     h+='<div class="qzlbl">本次錯題（已存入錯題本）</div>';
-    h+=QZ.wrong.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div><div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div></div>`).join('');
+    h+=QZ.wrong.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div><div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzFmt(q.e)}</div></div>`).join('');
     h+='<button class="qzbtn big" onclick="qzStart(window.__qzw)">只練本次錯題 🔁</button>';
   }else{h+='<div class="qzexp">全部答對，太強了！🎉</div>';}
   h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
@@ -472,7 +473,7 @@ function qzWrongbook(){
     h+=`<div class="qzlbl">共 ${a.length} 題</div>`;
     h+=a.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div>`+
       q.o.map((o,i)=>`<div class="qzwo ${i===q.a?'r':''}">${'ABCD'[i]}. ${qzEsc(o)}</div>`).join('')+
-      `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div></div>`).join('');
+      `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzFmt(q.e)}</div></div>`).join('');
     h+='<button class="qzbtn big" onclick="qzStart(wbGet())">🔁 練習全部錯題</button>';
     h+='<button class="qzbtn ghost" onclick="if(confirm(\'確定清空錯題本？\')){wbSave([]);qzWrongbook();}">🗑️ 清空錯題本</button>';
   }
@@ -487,7 +488,7 @@ function qzSavebook(){
     h+=`<div class="qzlbl">共 ${a.length} 題</div>`;
     h+=a.map(q=>`<div class="qzwrong"><div class="qzwq"><span class="qzpill save">⭐</span> ${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div>`+
       q.o.map((o,i)=>`<div class="qzwo ${i===q.a?'r':''}">${'ABCD'[i]}. ${qzEsc(o)}</div>`).join('')+
-      `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div>`+
+      `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzFmt(q.e)}</div>`+
       `<button class="qzbtn ghost" style="margin-top:8px;padding:8px;font-size:13px" onclick="sbDel('${qzId(q)}');qzSavebook()">✕ 移除此題</button></div>`).join('');
     h+='<button class="qzbtn gold" onclick="qzStart(sbGet())">🔁 練習全部收藏</button>';
     h+='<button class="qzbtn ghost" onclick="if(confirm(\'確定清空收藏？\')){sbSave([]);qzSavebook();}">🗑️ 清空收藏</button>';
