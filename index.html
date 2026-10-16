@@ -138,6 +138,10 @@
   .qzbtn:active{transform:scale(.97)}
   .qzbtn.big:active{box-shadow:0 2px 8px rgba(99,102,241,.4)}
   @media(hover:hover){.qzbtn.big:hover{filter:brightness(1.06)}.qzbtn.ghost:hover{background:#f6f7fb}}
+  .qzbtn.star{background:#fff;color:#b45309;border:1.5px solid #fcd34d}
+  .qzbtn.star.on{background:#fffbeb;color:#b45309;border-color:#f59e0b}
+  .qzbtn.gold{background:linear-gradient(135deg,#f59e0b,#f6b935);color:#fff;box-shadow:0 6px 18px rgba(245,158,11,.33)}
+  .qzpill.save{background:#fef3c7;color:#b45309}
   .qzmeta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:#9aa1b0;margin-bottom:12px}
   .qzpill{background:#eef2ff;color:#4f46e5;border-radius:20px;padding:3px 11px;font-weight:800;font-size:12px}
   .qzpill.cat{background:#e7f8ee;color:#15803d}
@@ -373,6 +377,16 @@ const WBKEY='kaben_wrongbook';
 function wbGet(){try{return JSON.parse(localStorage.getItem(WBKEY)||'[]')}catch(e){return[]}}
 function wbSave(a){localStorage.setItem(WBKEY,JSON.stringify(a))}
 function wbAdd(q){const a=wbGet();const id=q.s+q.y+'#'+q.n;if(!a.some(x=>x.s+x.y+'#'+x.n===id)){a.push(q);wbSave(a)}}
+/* ⭐ 收藏題庫（答對也能收藏複習） */
+const SBKEY='kaben_savebook';
+function qzId(q){return q.s+q.y+'#'+q.n}
+function sbGet(){try{return JSON.parse(localStorage.getItem(SBKEY)||'[]')}catch(e){return[]}}
+function sbSave(a){localStorage.setItem(SBKEY,JSON.stringify(a))}
+function sbHas(q){const id=qzId(q);return sbGet().some(x=>qzId(x)===id)}
+function sbDel(id){sbSave(sbGet().filter(x=>qzId(x)!==id))}
+function sbToggle(){const q=QZ.pool[QZ.idx];const id=qzId(q);const a=sbGet();
+  if(a.some(x=>qzId(x)===id)){sbSave(a.filter(x=>qzId(x)!==id));}else{a.push(q);sbSave(a);}
+  const btn=document.getElementById('qzsavebtn');if(btn){const on=sbHas(q);btn.className='qzbtn star'+(on?' on':'');btn.textContent=on?'⭐ 已收藏（點擊取消）':'☆ 收藏此題複習';}}
 function qzShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function qzEsc(s){return (''+s).replace(/</g,'&lt;')}
 const QZMAS_OK=['答對了！就是這個手感 🎉','漂亮，穩穩的 💪','正解！你記住了 ✨','太棒了，繼續保持 🔥','沒錯就是它，手感來了 😎','這題你完全看穿了 👏'];
@@ -384,13 +398,14 @@ function qzClose(){document.getElementById('quizmodal').style.display='none';}
 function qzSetup(){
   const subs=[...new Set(QUIZ.map(q=>q.s))];
   const yrs=[...new Set(QUIZ.map(q=>q.y))].sort((a,b)=>b-a);
-  const nb=wbGet().length;
+  const nb=wbGet().length;const ns=sbGet().length;
   let h='<h2 class="qzh">🎯 刷題設定</h2><p class="qzsub">題庫共 '+QUIZ.length+' 題・選好條件就開始 🚀</p>';
   h+='<div class="qzlbl">科目（可複選）</div><div class="qzchk" id="qzsub">'+subs.map(s=>`<label><input type="checkbox" value="${s}" checked> ${s}</label>`).join('')+'</div>';
   h+='<div class="qzlbl">年份（可複選）</div><div class="qzchk" id="qzyr">'+yrs.map(y=>`<label><input type="checkbox" value="${y}" checked> 民${y}</label>`).join('')+'</div>';
   h+='<div class="qzlbl">題數</div><div class="qzchk" id="qznum">'+[10,20,30,0].map(n=>`<label><input type="radio" name="qnum" value="${n}" ${n===10?'checked':''}> ${n===0?'全部':n+'題'}</label>`).join('')+'</div>';
   h+='<button class="qzbtn big" onclick="qzStart()">開始刷題 ▶</button>';
   h+=`<button class="qzbtn ghost" onclick="qzWrongbook()">📕 我的錯題本（${nb}）</button>`;
+  h+=`<button class="qzbtn star${ns?' on':''}" onclick="qzSavebook()">⭐ 我的收藏（${ns}）</button>`;
   document.getElementById('qzbody').innerHTML=h;
 }
 function qzChk(id){return [...document.querySelectorAll('#'+id+' input:checked')].map(i=>i.value)}
@@ -424,6 +439,7 @@ function qzAnswer(i){
     `<div class="qzmas ${ok?'ok':'no'}"><div class="face">🦉</div><div class="bub">${ok?qzPick(QZMAS_OK):qzPick(QZMAS_NO)}</div></div>`+
     `<div class="qzres ${ok?'okk':'nok'}">${ok?'✅ 答對了！':'❌ 答錯了（正解 '+'ABCD'[q.a]+'）'}</div>`+
     `<div class="qzexp"><b>詳解</b>　${qzEsc(q.e)}</div>`+
+    `<button id="qzsavebtn" class="qzbtn star${sbHas(q)?' on':''}" onclick="sbToggle()">${sbHas(q)?'⭐ 已收藏（點擊取消）':'☆ 收藏此題複習'}</button>`+
     `<button class="qzbtn big" onclick="qzNext()">${last?'看結果 🏁':'下一題 →'}</button>`;
 }
 function qzNext(){QZ.idx++;if(QZ.idx>=QZ.pool.length)qzResult();else qzQuestion();}
@@ -459,6 +475,22 @@ function qzWrongbook(){
       `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div></div>`).join('');
     h+='<button class="qzbtn big" onclick="qzStart(wbGet())">🔁 練習全部錯題</button>';
     h+='<button class="qzbtn ghost" onclick="if(confirm(\'確定清空錯題本？\')){wbSave([]);qzWrongbook();}">🗑️ 清空錯題本</button>';
+  }
+  h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
+  const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
+}
+function qzSavebook(){
+  const a=sbGet();
+  let h='<h2 class="qzh">⭐ 我的收藏</h2>';
+  if(!a.length){h+='<div class="qzexp">還沒有收藏任何題目。答題後點「☆ 收藏此題複習」就會存在這裡（答對也能收藏）。</div>';}
+  else{
+    h+=`<div class="qzlbl">共 ${a.length} 題</div>`;
+    h+=a.map(q=>`<div class="qzwrong"><div class="qzwq"><span class="qzpill save">⭐</span> ${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div>`+
+      q.o.map((o,i)=>`<div class="qzwo ${i===q.a?'r':''}">${'ABCD'[i]}. ${qzEsc(o)}</div>`).join('')+
+      `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzEsc(q.e)}</div>`+
+      `<button class="qzbtn ghost" style="margin-top:8px;padding:8px;font-size:13px" onclick="sbDel('${qzId(q)}');qzSavebook()">✕ 移除此題</button></div>`).join('');
+    h+='<button class="qzbtn gold" onclick="qzStart(sbGet())">🔁 練習全部收藏</button>';
+    h+='<button class="qzbtn ghost" onclick="if(confirm(\'確定清空收藏？\')){sbSave([]);qzSavebook();}">🗑️ 清空收藏</button>';
   }
   h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
   const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
