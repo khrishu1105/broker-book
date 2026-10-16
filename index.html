@@ -127,13 +127,22 @@
   .qzbtn{display:block;width:100%;margin:10px 0 0;padding:13px;border-radius:10px;border:0;font-size:15px;font-weight:700;cursor:pointer;background:var(--card);color:var(--ink)}
   .qzbtn.big{background:var(--brand);color:#fff}
   .qzbtn.ghost{background:var(--card);color:var(--brand);border:1px solid var(--line)}
-  .qzprog{font-size:13px;color:var(--sub);margin-bottom:10px}
-  .qztag{background:var(--card);padding:2px 8px;border-radius:6px;margin-left:6px}
-  .qzq{font-size:16px;font-weight:600;line-height:1.75;margin-bottom:14px}
-  .qzopt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--ink);font-size:14.5px;line-height:1.6;cursor:pointer}
-  .qzopt.dis{cursor:default;opacity:.95}
-  .qzopt.right{background:#1f7a3f;border-color:#1f7a3f;color:#fff}
-  .qzopt.wrong{background:#b23b3b;border-color:#b23b3b;color:#fff}
+  .qzmeta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--sub);margin-bottom:12px}
+  .qzpill{background:var(--hover);color:var(--brand);border-radius:20px;padding:3px 11px;font-weight:800;font-size:12px}
+  .qzpill.cat{background:rgba(34,197,94,.14);color:#15803d}
+  .qzq-card{background:var(--card);border-radius:16px;border-left:5px solid var(--accent);padding:17px 18px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:16px}
+  .qzq{font-size:16px;font-weight:700;line-height:1.8;color:var(--ink);margin:0}
+  .qzopt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin:11px 0;padding:14px 15px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-size:14.5px;line-height:1.6;cursor:pointer;box-shadow:0 1px 5px rgba(0,0,0,.05)}
+  .qzbadge{flex:0 0 auto;width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;background:#eef2ff;color:#6366f1}
+  .qztext{flex:1}
+  .qzmark{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:none;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+  .qzopt.dis{cursor:default}
+  .qzopt.right{border-color:#22c55e;background:rgba(34,197,94,.10)}
+  .qzopt.right .qzbadge{background:#22c55e;color:#fff}
+  .qzopt.right .qzmark{display:flex;background:#22c55e}
+  .qzopt.wrong{border-color:#ef4444;background:rgba(239,68,68,.09)}
+  .qzopt.wrong .qzbadge{background:#ef4444;color:#fff}
+  .qzopt.wrong .qzmark{display:flex;background:#ef4444}
   .qzres{font-size:16px;font-weight:800;margin:14px 0 8px}
   .qzres.okk{color:#1f7a3f}.qzres.nok{color:#b23b3b}
   .qzexp{background:var(--card);border-left:4px solid var(--brand);border-radius:8px;padding:11px 13px;line-height:1.75;font-size:14px;margin:8px 0}
@@ -392,9 +401,9 @@ function qzStart(pool){
 }
 function qzQuestion(){
   const q=QZ.pool[QZ.idx];QZ.answered=false;
-  let h=`<div class="qzprog">第 ${QZ.idx+1} / ${QZ.pool.length} 題<span class="qztag">${q.s} 民${q.y}#${q.n}</span></div>`;
-  h+=`<div class="qzq">${qzEsc(q.q)}</div>`;
-  h+='<div>'+q.o.map((o,i)=>`<button class="qzopt" id="qzo${i}" onclick="qzAnswer(${i})">${'ABCD'[i]}. ${qzEsc(o)}</button>`).join('')+'</div>';
+  let h=`<div class="qzmeta"><span class="qzpill">${q.s}</span><span>民${q.y} #${q.n}</span>${q.t?`<span class="qzpill cat">🏷️ ${qzEsc(q.t)}</span>`:''}<span style="margin-left:auto">${QZ.idx+1} / ${QZ.pool.length}</span></div>`;
+  h+=`<div class="qzq-card"><div class="qzq">${qzEsc(q.q)}</div></div>`;
+  h+='<div>'+q.o.map((o,i)=>`<button class="qzopt" id="qzo${i}" onclick="qzAnswer(${i})"><span class="qzbadge">${'ABCD'[i]}</span><span class="qztext">${qzEsc(o)}</span><span class="qzmark"></span></button>`).join('')+'</div>';
   h+='<div id="qzfb"></div>';
   const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
 }
@@ -402,9 +411,9 @@ function qzAnswer(i){
   if(QZ.answered)return;QZ.answered=true;
   const q=QZ.pool[QZ.idx];
   document.querySelectorAll('.qzopt').forEach(b=>b.classList.add('dis'));
-  document.getElementById('qzo'+q.a).classList.add('right');
+  const ro=document.getElementById('qzo'+q.a);ro.classList.add('right');const rm=ro.querySelector('.qzmark');if(rm)rm.textContent='✓';
   const ok=i===q.a;
-  if(ok){QZ.score++}else{document.getElementById('qzo'+i).classList.add('wrong');QZ.wrong.push(q);wbAdd(q);}
+  if(ok){QZ.score++}else{const wo=document.getElementById('qzo'+i);wo.classList.add('wrong');const wm=wo.querySelector('.qzmark');if(wm)wm.textContent='✕';QZ.wrong.push(q);wbAdd(q);}
   const last=QZ.idx===QZ.pool.length-1;
   document.getElementById('qzfb').innerHTML=
     `<div class="qzmas ${ok?'ok':'no'}"><div class="face">🦉</div><div class="bub">${ok?qzPick(QZMAS_OK):qzPick(QZMAS_NO)}</div></div>`+
