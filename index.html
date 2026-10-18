@@ -93,6 +93,11 @@
     font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
   .barwrap{position:sticky;top:0;height:4px;background:var(--line);z-index:5}
   #bar{height:100%;width:0;background:linear-gradient(90deg,var(--brand2),var(--brand))}
+  /* 回頂／到底 浮動按鈕 */
+  #navFab{position:fixed;right:16px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:29;display:flex;flex-direction:column;gap:8px}
+  #navFab button{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--sidebar);color:var(--brand);
+    font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .1s,opacity .2s}
+  #navFab button:active{transform:scale(.9)}
   /* 詞彙彈窗 */
   .gl{color:var(--accent);font-weight:700;border-bottom:1px dashed var(--accent);cursor:pointer}
   #glmodal{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:20px}
@@ -187,6 +192,7 @@
 <main id="reader"><div class="barwrap"><div id="bar"></div></div><div class="page" id="page"></div></main>
 <div id="glmodal"><div id="glbox"><button id="glclose" aria-label="關閉">✕</button><div id="glbody"></div></div></div>
 <div id="quizmodal"><div id="qzcard"><div id="qzhead"><span>🎯 刷題練習</span><button onclick="qzClose()" aria-label="關閉">✕</button></div><div id="qzbody"></div></div></div>
+<div id="navFab"><button id="toTop" title="回到最上面" aria-label="回到最上面" onclick="rdScroll(0)">↑</button><button id="toBottom" title="跳到最下面" aria-label="跳到最下面" onclick="rdScroll(1)">↓</button></div>
 
 <script src="data/book.js"></script>
 <script src="data/quiz.js"></script>
@@ -377,9 +383,14 @@ function render(){
   if(pv&&prevI>=0)pv.onclick=()=>{cur=prevI;render();};
   if(nx&&nextI>=0)nx.onclick=()=>{cur=nextI;render();};
 }
+function rdScroll(dir){const r=document.getElementById('reader');r.scrollTo({top:dir?r.scrollHeight:0,behavior:'smooth'});}
 document.getElementById('reader').addEventListener('scroll',e=>{
-  const el=e.target;const pct=el.scrollTop/(el.scrollHeight-el.clientHeight||1)*100;
+  const el=e.target;const max=el.scrollHeight-el.clientHeight||1;const pct=el.scrollTop/max*100;
   document.getElementById('bar').style.width=pct+'%';
+  // 接近頂端時淡化「回頂」、接近底端時淡化「到底」
+  const t=document.getElementById('toTop'),b=document.getElementById('toBottom');
+  if(t)t.style.opacity=el.scrollTop<40?'.35':'1';
+  if(b)b.style.opacity=el.scrollTop>max-40?'.35':'1';
 });
 render();
 
