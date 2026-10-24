@@ -397,6 +397,24 @@ render();
 
 /* ===== 刷題引擎 ===== */
 const QUIZ = window.QUIZ || [];
+/* ---- 民法分編(範圍)分類：總則/債/物權/親屬/繼承 ---- */
+const CIVIL_PARTS=['總則','債','物權','親屬','繼承'];
+const CIVIL_OVR={'114#9':'總則','108#1':'總則','110#10':'總則','113#1':'債','114#6':'總則'};
+function civilPart(q){
+  const key=q.y+'#'+q.n; if(CIVIL_OVR[key])return CIVIL_OVR[key];
+  const rng=n=> n<=152?'總則': n<=756?'債': n<=966?'物權': n<=1137?'親屬':'繼承';
+  const cnt={};
+  [...String(q.e||'').matchAll(/§\s*(\d+)/g)].forEach(m=>{const r=rng(+m[1]);cnt[r]=(cnt[r]||0)+2;});
+  [...String(q.q||'').matchAll(/§\s*(\d+)/g)].forEach(m=>{const r=rng(+m[1]);cnt[r]=(cnt[r]||0)+1;});
+  let best=null,bv=0;for(const k in cnt){if(cnt[k]>bv){bv=cnt[k];best=k;}}
+  if(best)return best;
+  const t=String(q.e||'')+String(q.q||'');
+  if(/夫妻|婚姻|離婚|財產制|剩餘財產|結婚/.test(t))return'親屬';
+  if(/繼承|遺囑|應繼分|特留分|遺產|拋棄繼承|代位繼承/.test(t))return'繼承';
+  if(/所有權|抵押|地上權|占有|共有|役權|質權|留置|典權|物權/.test(t))return'物權';
+  if(/契約|買賣|租賃|侵權|不當得利|無因管理|連帶|承攬|委任|居間|保證|定金|違約/.test(t))return'債';
+  return'總則';
+}
 const WBKEY='kaben_wrongbook';
 function wbGet(){try{return JSON.parse(localStorage.getItem(WBKEY)||'[]')}catch(e){return[]}}
 function wbSave(a){localStorage.setItem(WBKEY,JSON.stringify(a))}
@@ -426,6 +444,7 @@ function qzSetup(){
   const nb=wbGet().length;const ns=sbGet().length;
   let h='<h2 class="qzh">🎯 刷題設定</h2><p class="qzsub">題庫共 '+QUIZ.length+' 題・選好條件就開始 🚀</p>';
   h+='<div class="qzlbl">科目（可複選）</div><div class="qzchk" id="qzsub">'+subs.map(s=>`<label><input type="checkbox" value="${s}" checked> ${s}</label>`).join('')+'</div>';
+  if(subs.includes('民法'))h+='<div class="qzlbl">民法範圍（僅篩選「民法」題）</div><div class="qzchk" id="qzcpart">'+CIVIL_PARTS.map(p=>`<label><input type="checkbox" value="${p}" checked> ${p}</label>`).join('')+'</div>';
   h+='<div class="qzlbl">年份（可複選）</div><div class="qzchk" id="qzyr">'+yrs.map(y=>`<label><input type="checkbox" value="${y}" checked> 民${y}</label>`).join('')+'</div>';
   h+='<div class="qzlbl">題數</div><div class="qzchk" id="qznum">'+[10,20,30,0].map(n=>`<label><input type="radio" name="qnum" value="${n}" ${n===10?'checked':''}> ${n===0?'全部':n+'題'}</label>`).join('')+'</div>';
   h+='<button class="qzbtn big" onclick="qzStart()">開始刷題 ▶</button>';
@@ -437,8 +456,9 @@ function qzChk(id){return [...document.querySelectorAll('#'+id+' input:checked')
 function qzStart(pool){
   if(!pool){
     const subs=qzChk('qzsub'), yrs=qzChk('qzyr').map(Number);
+    const cparts=document.getElementById('qzcpart')?qzChk('qzcpart'):CIVIL_PARTS;
     const n=+(document.querySelector('#qznum input:checked')||{value:0}).value;
-    pool=QUIZ.filter(q=>subs.includes(q.s)&&yrs.includes(q.y));
+    pool=QUIZ.filter(q=>subs.includes(q.s)&&yrs.includes(q.y)&&(q.s!=='民法'||cparts.includes(civilPart(q))));
     pool=qzShuffle(pool.slice()); if(n>0)pool=pool.slice(0,n);
   }else{pool=qzShuffle(pool.slice());}
   if(!pool.length){alert('沒有符合條件的題目，請重新勾選。');return;}
