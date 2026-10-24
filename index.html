@@ -443,9 +443,10 @@ function qzSetup(){
   const yrs=[...new Set(QUIZ.map(q=>q.y))].sort((a,b)=>b-a);
   const nb=wbGet().length;const ns=sbGet().length;
   let h='<h2 class="qzh">🎯 刷題設定</h2><p class="qzsub">題庫共 '+QUIZ.length+' 題・選好條件就開始 🚀</p>';
-  h+='<div class="qzlbl">科目（可複選）</div><div class="qzchk" id="qzsub">'+subs.map(s=>`<label><input type="checkbox" value="${s}" checked> ${s}</label>`).join('')+'</div>';
-  if(subs.includes('民法'))h+='<div class="qzlbl">民法範圍（僅篩選「民法」題）</div><div class="qzchk" id="qzcpart">'+CIVIL_PARTS.map(p=>`<label><input type="checkbox" value="${p}" checked> ${p}</label>`).join('')+'</div>';
-  h+='<div class="qzlbl">年份（可複選）</div><div class="qzchk" id="qzyr">'+yrs.map(y=>`<label><input type="checkbox" value="${y}" checked> 民${y}</label>`).join('')+'</div>';
+  const tgl=id=>`<span onclick="qzToggleAll('${id}')" style="float:right;font-size:12px;color:#6366f1;cursor:pointer;font-weight:700">全選／清除</span>`;
+  h+='<div class="qzlbl">科目（可複選）'+tgl('qzsub')+'</div><div class="qzchk" id="qzsub">'+subs.map(s=>`<label><input type="checkbox" value="${s}" checked> ${s}</label>`).join('')+'</div>';
+  if(subs.includes('民法'))h+='<div class="qzlbl">民法範圍（僅篩選「民法」題）'+tgl('qzcpart')+'</div><div class="qzchk" id="qzcpart">'+CIVIL_PARTS.map(p=>`<label><input type="checkbox" value="${p}" checked> ${p}</label>`).join('')+'</div>';
+  h+='<div class="qzlbl">年份（可複選）'+tgl('qzyr')+'</div><div class="qzchk" id="qzyr">'+yrs.map(y=>`<label><input type="checkbox" value="${y}" checked> 民${y}</label>`).join('')+'</div>';
   h+='<div class="qzlbl">題數</div><div class="qzchk" id="qznum">'+[10,20,30,0].map(n=>`<label><input type="radio" name="qnum" value="${n}" ${n===10?'checked':''}> ${n===0?'全部':n+'題'}</label>`).join('')+'</div>';
   h+='<button class="qzbtn big" onclick="qzStart()">開始刷題 ▶</button>';
   h+=`<button class="qzbtn ghost" onclick="qzWrongbook()">📕 我的錯題本（${nb}）</button>`;
@@ -453,6 +454,7 @@ function qzSetup(){
   document.getElementById('qzbody').innerHTML=h;
 }
 function qzChk(id){return [...document.querySelectorAll('#'+id+' input:checked')].map(i=>i.value)}
+function qzToggleAll(id){const b=[...document.querySelectorAll('#'+id+' input')];const allOn=b.every(x=>x.checked);b.forEach(x=>x.checked=!allOn);}
 function qzStart(pool){
   if(!pool){
     const subs=qzChk('qzsub'), yrs=qzChk('qzyr').map(Number);
