@@ -182,20 +182,43 @@
   .qzmas.no .bub{border-color:#fca5a5;color:#c2410c;background:#fff7f5}
   @keyframes qzpop{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
   .qzsug{background:#f0f3ff;border-left:4px solid #6366f1;border-radius:10px;padding:12px 14px;margin:12px 0;font-size:14px;line-height:1.9;color:#374151}
+  /* 申論模式 */
+  #essayBtn{position:fixed;top:calc(14px + env(safe-area-inset-top));right:116px;z-index:30;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--sidebar);color:#d97706;font-size:19px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+  #essaymodal{display:none;position:fixed;inset:0;z-index:60;background:rgba(17,20,28,.55);align-items:center;justify-content:center;padding:14px;box-sizing:border-box}
+  #escard{background:#fff;color:#2a2f3a;border-radius:20px;width:100%;max-width:640px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.4);animation:qzin .22s ease}
+  #eshead{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid #eef0f4;font-weight:800;font-size:16px;color:#2a2f3a;background:#fff}
+  #eshead button{background:#f1f3f7;color:#6b7280;border:0;width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer}
+  #esbody{overflow-y:auto;padding:20px;background:#fafbfd}
+  .es-q{font-size:15.5px;line-height:2.05;color:#232836;background:#fff;border-radius:14px;border-left:5px solid #f59e0b;padding:16px 18px;box-shadow:0 2px 14px rgba(30,40,80,.07);margin-bottom:6px}
+  .es-hl1{background:#dbeafe;border-bottom:2.5px solid #3b82f6;padding:1px 2px;border-radius:3px;font-weight:700}
+  .es-hl2{background:#dcfce7;border-bottom:2.5px solid #22c55e;padding:1px 2px;border-radius:3px;font-weight:700}
+  .es-hl3{background:#fef9c3;border-bottom:2.5px solid #eab308;padding:1px 2px;border-radius:3px;font-weight:700}
+  .es-frame{background:#f6f7fb;border-radius:12px;padding:13px 15px;font-size:13.5px;line-height:2;color:#374151}
+  .es-ta{width:100%;min-height:130px;border:1.5px solid #e2e6ee;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;line-height:1.85;box-sizing:border-box;resize:vertical;color:#232836}
+  .es-hint{background:#fffbeb;border-left:4px solid #f59e0b;border-radius:10px;padding:10px 13px;margin:8px 0;font-size:13.5px;line-height:1.75;color:#713f12}
+  .es-rub{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1.5px solid #e2e6ee;border-radius:11px;margin:7px 0;font-size:13.5px;line-height:1.6;cursor:pointer;background:#fff;color:#374151;transition:background .14s,border-color .14s}
+  .es-rub.on{background:#f0fdf4;border-color:#86efac;color:#15803d}
+  .es-ans{background:#fff;border:1px solid #e6e9f0;border-radius:12px;padding:15px 17px;font-size:13.8px;line-height:2;color:#2a2f3a;white-space:pre-wrap;margin-top:4px}
+  details.es-d{margin:12px 0}
+  details.es-d>summary{cursor:pointer;font-weight:800;color:#b45309;padding:11px 14px;background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;list-style:none;font-size:14px}
+  details.es-d>summary::-webkit-details-marker{display:none}
 </style>
 </head>
 <body>
 <button id="menuBtn" onclick="document.getElementById('toc').classList.toggle('open')">☰</button>
 <button id="themeBtn" title="切換深色／淺色" aria-label="切換深色淺色">🌙</button>
 <button id="quizBtn" title="刷題" aria-label="刷題" onclick="qzOpen()">🎯</button>
+<button id="essayBtn" title="申論練習" aria-label="申論練習" onclick="esOpen()">📝</button>
 <nav id="toc"></nav>
 <main id="reader"><div class="barwrap"><div id="bar"></div></div><div class="page" id="page"></div></main>
 <div id="glmodal"><div id="glbox"><button id="glclose" aria-label="關閉">✕</button><div id="glbody"></div></div></div>
 <div id="quizmodal"><div id="qzcard"><div id="qzhead"><span>🎯 刷題練習</span><button onclick="qzClose()" aria-label="關閉">✕</button></div><div id="qzbody"></div></div></div>
+<div id="essaymodal"><div id="escard"><div id="eshead"><span>📝 申論練習</span><button onclick="esClose()" aria-label="關閉">✕</button></div><div id="esbody"></div></div></div>
 <div id="navFab"><button id="toTop" title="回到最上面" aria-label="回到最上面" onclick="rdScroll(0)">↑</button><button id="toBottom" title="跳到最下面" aria-label="跳到最下面" onclick="rdScroll(1)">↓</button></div>
 
 <script src="data/book.js"></script>
 <script src="data/quiz.js"></script>
+<script src="data/essay.js"></script>
 <script>
 const BOOK = window.BOOK || [];
 const KEY="kaben_last_v1";
@@ -542,6 +565,57 @@ function qzSavebook(){
   h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
   const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
 }
+</script>
+<script>
+/* ===== 申論練習引擎 ===== */
+const ESSAY = window.ESSAY || [];
+let ES = {cur:null, checked:{}};
+function esOpen(){document.getElementById('essaymodal').style.display='flex';esMenu();}
+function esClose(){document.getElementById('essaymodal').style.display='none';}
+function esMark(q){return qzEsc(q).replace(/\{\{(\d+)\|([\s\S]+?)\}\}/g,(m,n,t)=>'<span class="es-hl'+n+'">'+t+'</span>');}
+function esMenu(){
+  let h='<div class="qzh">📝 申論練習</div><div class="qzsub">歷屆申論題 · 題目拆解 → 答題架構 → 自評得分 → 參考擬答</div>';
+  h+='<div class="qzlbl">選擇題目</div>';
+  if(!ESSAY.length){h+='<p style="color:#9aa1b0">尚無申論題</p>';}
+  ESSAY.forEach((e,i)=>{
+    h+='<button class="qzbtn ghost" style="text-align:left;line-height:1.5" onclick="esStart('+i+')"><b>'+qzEsc(e.s)+'・'+e.y+'年 第'+e.n+'題</b>（'+e.pts+'分）<br><span style="font-size:12px;color:#9aa1b0">'+qzEsc(e.topic)+'</span></button>';
+  });
+  document.getElementById('esbody').innerHTML=h;
+}
+function esStart(i){
+  const e=ESSAY[i]; ES.cur=e; ES.checked={};
+  let h='<button class="qzbtn ghost" style="width:auto;padding:7px 14px;margin:0 0 12px" onclick="esMenu()">← 題目清單</button>';
+  h+='<div class="qzmeta"><span class="qzpill">'+qzEsc(e.s)+'</span><span class="qzpill cat">'+e.y+'年 第'+e.n+'題</span><span class="qzpill">'+e.pts+'分</span></div>';
+  h+='<div class="es-q">'+esMark(e.q)+'</div>';
+  h+='<div style="font-size:11.5px;color:#9aa1b0;margin:6px 0 2px">🖍️ 上色處＝題目要你回答的重點（藍＝問1、綠＝問2）</div>';
+  h+='<div class="qzlbl">🎨 題目拆解（這題問你這幾件事）</div>';
+  e.asks.forEach((a,k)=>{const c=['#3b82f6','#22c55e','#eab308'][k]||'#6366f1';const bg=['#eff6ff','#f0fdf4','#fefce8'][k]||'#eef2ff';
+    h+='<div class="es-hint" style="border-color:'+c+';background:'+bg+';color:#1f2937"><b>問'+(k+1)+'：</b>'+qzEsc(a.t)+'<br><span style="font-size:12px;color:#6b7280">👉 '+qzEsc(a.note)+'</span></div>';});
+  h+='<div class="qzlbl">🏗️ 答題架構（照骨架由上往下、每行由左至右寫；一、二、三 對應各問）</div><div class="es-frame">'+e.frame.map(f=>qzEsc(f)).join('<br>')+'</div>';
+  h+='<div class="qzlbl">✍️ 我的作答（可選·寫完按下方鈕複製給 Claude 批改）</div><textarea id="esta" class="es-ta" placeholder="在這裡擬答…（用 一、二、三 分項作答）"></textarea>';
+  h+='<button class="qzbtn ghost" onclick="esCopy()">📋 複製我的作答＋得分點給 Claude 批改</button>';
+  h+='<details class="es-d"><summary>💡 卡住了？點開提示方向</summary><div style="padding:2px">'+e.hints.map(x=>'<div class="es-hint">'+qzEsc(x)+'</div>').join('')+'</div></details>';
+  h+='<div class="qzlbl">📋 得分點自評（勾選你有寫到的，自動加總）</div><div id="esrub">';
+  e.rubric.forEach((r,k)=>{h+='<div class="es-rub" onclick="esTog('+k+')"><span id="esck'+k+'" style="flex:0 0 auto">⬜</span><span style="flex:1">'+qzEsc(r.t)+' <b style="color:#d97706">（'+r.p+'分）</b></span></div>';});
+  h+='</div><div class="qzscore" id="esscore" style="color:#d97706">自評：0 <span>／ '+e.pts+' 分</span></div>';
+  h+='<details class="es-d"><summary>📖 顯示參考擬答（建議先自己寫完再看）</summary><div class="es-ans">'+qzEsc(e.ans)+'</div></details>';
+  document.getElementById('esbody').innerHTML=h;
+  document.getElementById('esbody').parentElement.scrollTop=0;
+}
+function esTog(k){
+  ES.checked[k]=!ES.checked[k];
+  document.getElementById('esck'+k).textContent=ES.checked[k]?'✅':'⬜';
+  document.querySelectorAll('#esrub .es-rub')[k].classList.toggle('on',!!ES.checked[k]);
+  let s=0;ES.cur.rubric.forEach((r,i)=>{if(ES.checked[i])s+=r.p;});
+  document.getElementById('esscore').innerHTML='自評：'+s+' <span>／ '+ES.cur.pts+' 分</span>';
+}
+function esCopy(){
+  const e=ES.cur, ta=document.getElementById('esta');
+  const txt='【請依下列得分點幫我批改這題申論，逐點給分並提供改寫建議】\n科目：'+e.s+'　'+e.y+'年 第'+e.n+'題（'+e.pts+'分）\n\n題目：'+e.q.replace(/\{\{\d+\|([\s\S]+?)\}\}/g,'$1')+'\n\n得分點：\n'+e.rubric.map((r,i)=>(i+1)+'. ('+r.p+'分) '+r.t).join('\n')+'\n\n我的作答：\n'+((ta&&ta.value)||'(未填)');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>alert('已複製！貼到 Claude 對話即可批改 ✅'),()=>esCopyFallback(txt));}
+  else esCopyFallback(txt);
+}
+function esCopyFallback(txt){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');alert('已複製！貼到 Claude 對話即可批改 ✅');}catch(e){alert('複製失敗，請手動選取');}document.body.removeChild(ta);}
 </script>
 <script>
 /* 註冊 Service Worker → 支援離線複習 */

@@ -1,12 +1,13 @@
 /* Service Worker — 讓電子書可離線複習。
    改版課文/題庫後，把 CACHE 版本號 +1，手機下次連網開啟就會自動更新。 */
-const CACHE = "broker-book-v649";
+const CACHE = "broker-book-v650";
 const ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./data/book.js",
   "./data/quiz.js",
+  "./data/essay.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png"
