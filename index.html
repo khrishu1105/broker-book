@@ -577,7 +577,7 @@ function esMenu(){
   let h='<div class="qzh">📝 申論練習</div><div class="qzsub">歷屆申論題 · 題目拆解 → 答題架構 → 自評得分 → 參考擬答</div>';
   h+='<div class="qzlbl">選擇題目</div>';
   if(!ESSAY.length){h+='<p style="color:#9aa1b0">尚無申論題</p>';}
-  ESSAY.forEach((e,i)=>{
+  ESSAY.map((e,i)=>i).sort((a,b)=>{const A=ESSAY[a],B=ESSAY[b];if(A.s!==B.s)return A.s<B.s?-1:1;if(A.y!==B.y)return B.y-A.y;return A.n-B.n;}).forEach(i=>{const e=ESSAY[i];
     h+='<button class="qzbtn ghost" style="text-align:left;line-height:1.5" onclick="esStart('+i+')"><b>'+qzEsc(e.s)+'・'+e.y+'年 第'+e.n+'題</b>（'+e.pts+'分）<br><span style="font-size:12px;color:#9aa1b0">'+qzEsc(e.topic)+'</span></button>';
   });
   document.getElementById('esbody').innerHTML=h;
