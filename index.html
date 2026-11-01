@@ -573,18 +573,38 @@ let ES = {cur:null, checked:{}};
 function esOpen(){document.getElementById('essaymodal').style.display='flex';esMenu();}
 function esClose(){document.getElementById('essaymodal').style.display='none';}
 function esMark(q){return qzEsc(q).replace(/\{\{(\d+)\|([\s\S]+?)\}\}/g,(m,n,t)=>'<span class="es-hl'+n+'">'+t+'</span>');}
-function esMenu(){
+function esMenu(selSubj, selYear){
   let h='<div class="qzh">📝 申論練習</div><div class="qzsub">歷屆申論題 · 題目拆解 → 答題架構 → 自評得分 → 參考擬答</div>';
-  h+='<div class="qzlbl">選擇題目</div>';
-  if(!ESSAY.length){h+='<p style="color:#9aa1b0">尚無申論題</p>';}
-  ESSAY.map((e,i)=>i).sort((a,b)=>{const A=ESSAY[a],B=ESSAY[b];if(A.s!==B.s)return A.s<B.s?-1:1;if(A.y!==B.y)return B.y-A.y;return A.n-B.n;}).forEach(i=>{const e=ESSAY[i];
-    h+='<button class="qzbtn ghost" style="text-align:left;line-height:1.5" onclick="esStart('+i+')"><b>'+qzEsc(e.s)+'・'+e.y+'年 第'+e.n+'題</b>（'+e.pts+'分）<br><span style="font-size:12px;color:#9aa1b0">'+qzEsc(e.topic)+'</span></button>';
-  });
+  if(!ESSAY.length){h+='<p style="color:#9aa1b0">尚無申論題</p>';document.getElementById('esbody').innerHTML=h;return;}
+  const subs=[...new Set(ESSAY.map(e=>e.s))].sort();
+  if(!selSubj||subs.indexOf(selSubj)<0) selSubj=subs[0];
+  const years=[...new Set(ESSAY.filter(e=>e.s===selSubj).map(e=>e.y))].sort((a,b)=>b-a);
+  if(selYear&&years.indexOf(selYear)<0) selYear=null;
+  ES.vSubj=selSubj; ES.vYear=selYear||'';
+  const act='background:var(--brand);color:#fff;border-color:var(--brand)';
+  // 科目分頁
+  h+='<div class="qzlbl">科目</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">';
+  subs.forEach(s=>{const n=ESSAY.filter(e=>e.s===s).length;
+    h+='<button class="qzbtn ghost" style="width:auto;padding:6px 12px;'+(s===selSubj?act:'')+'" onclick="esMenu(\''+s+'\')">'+qzEsc(s)+'（'+n+'）</button>';});
+  h+='</div>';
+  // 年份篩選
+  h+='<div class="qzlbl">年份</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">';
+  h+='<button class="qzbtn ghost" style="width:auto;padding:6px 12px;'+(!selYear?act:'')+'" onclick="esMenu(\''+selSubj+'\')">全部</button>';
+  years.forEach(y=>{
+    h+='<button class="qzbtn ghost" style="width:auto;padding:6px 12px;'+(selYear===y?act:'')+'" onclick="esMenu(\''+selSubj+'\','+y+')">'+y+'年</button>';});
+  h+='</div>';
+  // 題目清單
+  h+='<div class="qzlbl">題目</div>';
+  const list=ESSAY.map((e,i)=>i).filter(i=>ESSAY[i].s===selSubj&&(!selYear||ESSAY[i].y===selYear))
+    .sort((a,b)=>{const A=ESSAY[a],B=ESSAY[b];if(A.y!==B.y)return B.y-A.y;return A.n-B.n;});
+  if(!list.length){h+='<p style="color:#9aa1b0">此分類尚無題目</p>';}
+  list.forEach(i=>{const e=ESSAY[i];
+    h+='<button class="qzbtn ghost" style="text-align:left;line-height:1.5" onclick="esStart('+i+')"><b>'+e.y+'年 第'+e.n+'題</b>（'+e.pts+'分）<br><span style="font-size:12px;color:#9aa1b0">'+qzEsc(e.topic)+'</span></button>';});
   document.getElementById('esbody').innerHTML=h;
 }
 function esStart(i){
   const e=ESSAY[i]; ES.cur=e; ES.checked={};
-  let h='<button class="qzbtn ghost" style="width:auto;padding:7px 14px;margin:0 0 12px" onclick="esMenu()">← 題目清單</button>';
+  let h='<button class="qzbtn ghost" style="width:auto;padding:7px 14px;margin:0 0 12px" onclick="esMenu(ES.vSubj,ES.vYear)">← 題目清單</button>';
   h+='<div class="qzmeta"><span class="qzpill">'+qzEsc(e.s)+'</span><span class="qzpill cat">'+e.y+'年 第'+e.n+'題</span><span class="qzpill">'+e.pts+'分</span></div>';
   h+='<div class="es-q">'+esMark(e.q)+'</div>';
   h+='<div style="font-size:11.5px;color:#9aa1b0;margin:6px 0 2px">🖍️ 上色處＝題目要你回答的重點（藍＝問1、綠＝問2）</div>';
