@@ -611,10 +611,10 @@ function esStart(i){
   h+='<div style="font-size:11.5px;color:#9aa1b0;margin:6px 0 2px">🖍️ 上色處＝題目要你回答的重點（藍＝問1、綠＝問2）</div>';
   h+='<div class="qzlbl">🎨 題目拆解（這題問你這幾件事）</div>';
   e.asks.forEach((a,k)=>{const c=['#3b82f6','#22c55e','#eab308'][k]||'#6366f1';const bg=['#eff6ff','#f0fdf4','#fefce8'][k]||'#eef2ff';
-    h+='<div class="es-hint" style="border-color:'+c+';background:'+bg+';color:#1f2937"><b>問'+(k+1)+'：</b>'+qzEsc(a.t)+'<br><span style="font-size:12px;color:#6b7280">👉 '+qzEsc(a.note)+'</span></div>';});
-  h+='<div class="qzlbl">🏗️ 答題架構（照骨架由上往下、每行由左至右寫；一、二、三 對應各問）</div><div class="es-frame">'+e.frame.map(f=>esFmt(f)).join('<br>')+'</div>';
-  h+='<div class="qzlbl">✍️ 我的作答（可選·寫完按下方鈕複製給 Claude 批改）</div><textarea id="esta" class="es-ta" placeholder="在這裡擬答…（用 一、二、三 分項作答）"></textarea>';
+    h+='<div class="es-hint" style="border-color:'+c+';background:'+bg+';color:#1f2937"><b>問'+(k+1)+'：</b>'+qzEsc(a.t)+'</div>';});
+  h+='<div class="qzlbl">✍️ 我的作答（先自己寫，架構／提示都收在下面·寫完按鈕複製給 Claude 批改）</div><textarea id="esta" class="es-ta" placeholder="在這裡擬答…（前言空兩格 →（一）→ 1. →(1) → 結論空兩格）"></textarea>';
   h+='<button class="qzbtn ghost" onclick="esCopy()">📋 複製我的作答＋得分點給 Claude 批改</button>';
+  h+='<details class="es-d"><summary>🏗️ 答題架構／方向（先自己寫，再點開對照）</summary><div style="padding:2px">'+e.asks.map((a,k)=>'<div class="es-hint">👉 問'+(k+1)+'：'+qzEsc(a.note)+'</div>').join('')+'<div class="es-frame">'+e.frame.map(f=>esFmt(f)).join('<br>')+'</div></div></details>';
   h+='<details class="es-d"><summary>💡 卡住了？點開提示方向</summary><div style="padding:2px">'+e.hints.map(x=>'<div class="es-hint">'+qzEsc(x)+'</div>').join('')+'</div></details>';
   h+='<div class="qzlbl">📋 得分點自評（勾選你有寫到的，自動加總）</div><div id="esrub">';
   e.rubric.forEach((r,k)=>{h+='<div class="es-rub" onclick="esTog('+k+')"><span id="esck'+k+'" style="flex:0 0 auto">⬜</span><span style="flex:1">'+qzEsc(r.t)+' <b style="color:#d97706">（'+r.p+'分）</b></span></div>';});
