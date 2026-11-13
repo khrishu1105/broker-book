@@ -535,18 +535,23 @@ function qzResult(){
   h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
   const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
 }
-function qzWrongbook(){
-  const a=wbGet();
+function qzWrongbook(filter){
+  const all=wbGet();
   let h='<h2 class="qzh">📕 我的錯題本</h2>';
-  if(!a.length){h+='<div class="qzexp">目前沒有錯題，先去刷題吧！</div>';}
-  else{
-    h+=`<div class="qzlbl">共 ${a.length} 題</div>`;
-    h+=a.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div>`+
-      q.o.map((o,i)=>`<div class="qzwo ${i===q.a?'r':''}">${'ABCD'[i]}. ${qzEsc(o)}</div>`).join('')+
-      `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzFmt(q.e)}</div></div>`).join('');
-    h+='<button class="qzbtn big" onclick="qzStart(wbGet())">🔁 練習全部錯題</button>';
-    h+='<button class="qzbtn ghost" onclick="if(confirm(\'確定清空錯題本？\')){wbSave([]);qzWrongbook();}">🗑️ 清空錯題本</button>';
-  }
+  if(!all.length){h+='<div class="qzexp">目前沒有錯題，先去刷題吧！</div>';h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';const b0=document.getElementById('qzbody');b0.innerHTML=h;b0.scrollTop=0;return;}
+  const subs=[...new Set(all.map(q=>q.s))];
+  const cur=(filter&&subs.includes(filter))?filter:'';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">';
+  h+=`<span class="qzpill" style="cursor:pointer;${!cur?'background:#6366f1;color:#fff':''}" onclick="qzWrongbook('')">全部 ${all.length}</span>`;
+  h+=subs.map(s=>`<span class="qzpill" style="cursor:pointer;${cur===s?'background:#6366f1;color:#fff':''}" onclick="qzWrongbook('${s}')">${qzEsc(s)} ${all.filter(q=>q.s===s).length}</span>`).join('');
+  h+='</div>';
+  const a=cur?all.filter(q=>q.s===cur):all;
+  h+=`<div class="qzlbl">${cur?qzEsc(cur)+'　':''}共 ${a.length} 題</div>`;
+  h+=a.map(q=>`<div class="qzwrong"><div class="qzwq">${q.s}民${q.y}#${q.n}　${qzEsc(q.q)}</div>`+
+    q.o.map((o,i)=>`<div class="qzwo ${i===q.a?'r':''}">${'ABCD'[i]}. ${qzEsc(o)}</div>`).join('')+
+    `<div class="qzexp sm"><b>正解 ${'ABCD'[q.a]}</b>：${qzFmt(q.e)}</div></div>`).join('');
+  h+=`<button class="qzbtn big" onclick="qzStart(${cur?`wbGet().filter(q=>q.s==='${cur}')`:'wbGet()'})">🔁 練習${cur?'這科':'全部'}錯題</button>`;
+  h+='<button class="qzbtn ghost" onclick="if(confirm(\'確定清空「全部科目」錯題本？此動作不可復原\')){wbSave([]);qzWrongbook();}">🗑️ 清空錯題本</button>';
   h+='<button class="qzbtn ghost" onclick="qzSetup()">← 回設定</button>';
   const b=document.getElementById('qzbody');b.innerHTML=h;b.scrollTop=0;
 }
